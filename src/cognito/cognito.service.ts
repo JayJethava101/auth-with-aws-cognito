@@ -3,13 +3,18 @@ import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import {
   CognitoIdentityProviderClient,
-  SignUpCommand,
   InitiateAuthCommand,
+  SignUpCommand,
   ConfirmSignUpCommand,
-  RespondToAuthChallengeCommand,
+  ForgotPasswordCommand,
+  ConfirmForgotPasswordCommand,
+  ChangePasswordCommand,
+  AdminUserGlobalSignOutCommand,
+  GlobalSignOutCommand,
   AssociateSoftwareTokenCommand,
   VerifySoftwareTokenCommand,
   SetUserMFAPreferenceCommand,
+  RespondToAuthChallengeCommand,
   AuthFlowType,
   ChallengeNameType,
 } from '@aws-sdk/client-cognito-identity-provider';
@@ -25,6 +30,7 @@ import {
   TooManyRequestsException,
   InvalidParameterException
 } from '../auth/exceptions/cognito-exceptions';
+import { TokenRevocationService } from 'src/utils/token.revocation.service';
 
 @Injectable()
 export class CognitoService {
@@ -33,7 +39,7 @@ export class CognitoService {
   private readonly clientId: string;
   private readonly clientSecret: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(private configService: ConfigService, private tokenRevocationService: TokenRevocationService) {
     this.userPoolId = this.configService.get<string>('AWS_COGNITO_USER_POOL_ID') || '';
     this.clientId = this.configService.get<string>('AWS_COGNITO_CLIENT_ID') || '';
     this.clientSecret = this.configService.get<string>('AWS_COGNITO_CLIENT_SECRET') || '';
@@ -276,4 +282,147 @@ export class CognitoService {
       this.handleCognitoError(error);
     }
   }
+
+   /**
+   * Initiate forgot password flow
+   */
+   async forgotPassword(email: string) {
+    try {
+      const secretHash = this.generateSecretHash(email);
+      
+      const command = new ForgotPasswordCommand({
+        ClientId: this.clientId,
+        Username: email,
+        SecretHash: secretHash,
+      });
+
+      const response = await this.cognitoClient.send(command);
+      return response;
+    } catch (error) {
+      this.handleCognitoError(error);
+    }
+  }
+
+  /**
+   * Confirm new password with confirmation code
+   */
+  async confirmForgotPassword(email: string, password: string, confirmationCode: string) {
+    try {
+      const secretHash = this.generateSecretHash(email);
+      
+      const command = new ConfirmForgotPasswordCommand({
+        ClientId: this.clientId,
+        Username: email,
+        Password: password,
+        ConfirmationCode: confirmationCode,
+        SecretHash: secretHash,
+      });
+
+      const response = await this.cognitoClient.send(command);
+      return response;
+    } catch (error) {
+      this.handleCognitoError(error);
+    }
+  }
+
+  /**
+   * Change user password
+   */
+  async changePassword(email: string, currentPassword: string, newPassword: string) {
+    try {
+      // First authenticate the user with current password
+      const authResponse = await this.signIn(email, currentPassword);
+      
+      if (!authResponse?.accessToken) {
+        throw new Error('Authentication failed');
+      }
+      
+      const { accessToken } = authResponse;
+      
+      // Change password using the access token
+      const command = new ChangePasswordCommand({
+        AccessToken: accessToken,
+        PreviousPassword: currentPassword,
+        ProposedPassword: newPassword,
+      });
+
+      const response = await this.cognitoClient.send(command);
+      return response;
+    } catch (error) {
+      this.handleCognitoError(error);
+    }
+  }
+
+  /**
+   * Sign out a user from all devices (global sign-out)
+   * Handles revoking refresh tokens and stopping new token issuance
+   * @param accessToken The user's current access token
+   */
+  async globalSignOut(accessToken: string) {
+    try {
+      const command = new GlobalSignOutCommand({
+        AccessToken: accessToken,
+      });
+
+      const response = await this.cognitoClient.send(command);
+
+      // Add the token to our local revocation list
+      await this.tokenRevocationService.revokeToken(accessToken);
+      
+
+      return response;
+    } catch (error) {
+      this.handleCognitoError(error);
+    }
+  }
+
+  /**
+   * Sign out a user from all devices by admin
+   * Only for admin use - requires admin credentials
+   * @param username The user's email/username
+   */
+  async forcedGlobalSignOut(username: string) {
+    try {
+      const command = new AdminUserGlobalSignOutCommand({
+        UserPoolId: this.userPoolId,
+        Username: username,
+      });
+
+      const response = await this.cognitoClient.send(command);
+
+      // todo: set the forcedSignOut flag to true for the user
+
+      return response;
+    } catch (error) {
+      this.handleCognitoError(error);
+    }
+  }
+
+  /**
+   * Refresh a user's access token using a refresh token
+   * @param refreshToken The user's refresh token
+   * @returns The new access token and refresh token
+   */
+  async refreshToken(refreshToken: string) {
+    try {
+   
+      const command = new InitiateAuthCommand({
+        AuthFlow: 'REFRESH_TOKEN_AUTH',
+        ClientId: this.clientId,
+        AuthParameters: {
+          REFRESH_TOKEN: refreshToken,
+          SECRET_HASH: this.clientSecret ,
+        },
+      });
+
+
+
+      const response = await this.cognitoClient.send(command);
+      return response;
+    } catch (error) {
+      this.handleCognitoError(error);
+    }
+  }
+
+  
 }

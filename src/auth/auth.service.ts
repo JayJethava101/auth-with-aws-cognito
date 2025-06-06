@@ -19,50 +19,67 @@ export class AuthService {
    
   ) {}
 
-  // async forgotPassword(email: string) {
-  //   return this.cognitoService.forgotPassword(email);
-  // }
+  async signUp(email: string, password: string, name: string) {
+    return this.cognitoService.signUp(email, password, name);
+  }
 
-  // async confirmForgotPassword(email: string, password: string, confirmationCode: string) {
-  //   return this.cognitoService.confirmForgotPassword(email, password, confirmationCode);
-  // }
+  async confirmSignUp(email: string, confirmationCode: string) {
+    // // After confirmation succeeds, assign the default role
+    // await this.assignDefaultRole(email);
+    return this.cognitoService.confirmSignUp(email, confirmationCode);
+  }
 
-  // async changePassword(changePasswordDto: ChangePasswordDto) {
-  //   const { email, currentPassword, newPassword } = changePasswordDto;
-  //   return this.cognitoService.changePassword(email, currentPassword, newPassword);
-  // }
+  async signIn(email: string, password: string) {
+    return this.cognitoService.signIn(email, password);
+  }
 
-  // async assignDefaultRole(email: string) {
-  //   // Default role is typically "user"
-  //   await this.rbacService.assignRoleToUser(email, 'user');
-  // }
+  async initiateMfaSetup(session: string) {
+   return this.cognitoService.initiateMfaSetup(session);
+  }
 
-  // async globalSignOut(globalSignOutDto: GlobalSignOutDto) {
-  //   const { accessToken } = globalSignOutDto;
-  //   return this.cognitoService.globalSignOut(accessToken);
-  // }
+  async verifyMFASetup(session: string, totpCode: string) {
+    return this.cognitoService.verifyMFASetup(session, totpCode);
+  }
 
-  // async forcedGlobalSignOut(adminGlobalSignOutDto: ForcedGlobalSignOutDto   ) {
-  //   const { username } = adminGlobalSignOutDto;
-  //   return this.cognitoService.forcedGlobalSignOut(username);
-  // }
+  async respondToMFASetupChallenge(session: string, totpCode: string, email: string) {
+    return this.cognitoService.respondToMFASetupChallenge(session, totpCode, email);
+  }
 
-  // async refreshToken(refreshToken: string) {
-  //   return this.cognitoService.refreshToken(refreshToken);
-  // }
+  async respondToMFAChallenge(session: string, totpCode: string, email: string) {
+    return this.cognitoService.respondToMFAChallenge(session, totpCode, email);
+  }
 
-  // async initiateMfaSetup(initiateMfaSetupDto: InitiateMfaSetupDto) {
-  //   const { session } = initiateMfaSetupDto;
-  //   return this.cognitoService.initiateMfaSetup(session);
-  // }
+  async forgotPassword(email: string) {
+    return this.cognitoService.forgotPassword(email);
+  }
 
-  // async verifyTotp(verifyTotpDto: VerifyTotpDto) {
-  //   const { session, totpCode } = verifyTotpDto;
-  //   return this.cognitoService.verifyTotp(session, totpCode);
-  // }
+  async confirmForgotPassword(email: string, password: string, confirmationCode: string) {
+    return this.cognitoService.confirmForgotPassword(email, password, confirmationCode);
+  }
 
-  // async respondToMfaChallenge(respondToMfaChallengeDto: RespondToMfaChallengeDto) {
-  //   const { email, session, totpCode } = respondToMfaChallengeDto;
-  //   return this.cognitoService.respondToMfaChallenge(email, session, totpCode);
-  // }
+  async changePassword(changePasswordDto: ChangePasswordDto) {
+    const { email, currentPassword, newPassword } = changePasswordDto;
+    return this.cognitoService.changePassword(email, currentPassword, newPassword);
+  }
+
+  async assignDefaultRole(email: string) {
+    // Default role is typically "user"
+    await this.rbacService.assignRoleToUser(email, 'user');
+  }
+
+  async globalSignOut(globalSignOutDto: GlobalSignOutDto) {
+    const { accessToken } = globalSignOutDto;
+    
+    return this.cognitoService.globalSignOut(accessToken);
+
+  }
+
+  async forcedGlobalSignOut(adminGlobalSignOutDto: ForcedGlobalSignOutDto   ) {
+    const { username } = adminGlobalSignOutDto;
+    return this.cognitoService.forcedGlobalSignOut(username);
+  }
+
+  async refreshToken(refreshToken: string) {
+    return this.cognitoService.refreshToken(refreshToken);
+  }
 }

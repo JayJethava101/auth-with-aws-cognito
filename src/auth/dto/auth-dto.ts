@@ -73,3 +73,15 @@ export class VerifyMFASetupDto {
   @Matches(/^\d{6}$/, { message: 'TOTP code must be exactly 6 digits' })
   totpCode: string;
 }
+
+export class GlobalSignOutDto {
+  @IsString({ message: 'Access Token must be a string' })
+  @IsNotEmpty({ message: 'Access Token is required' })
+  accessToken: string;
+}
+
+export class RefreshTokenDto {
+  @IsString({ message: 'Refresh Token must be a string' })
+  @IsNotEmpty({ message: 'Refresh Token is required' })
+  refreshToken: string;
+}
