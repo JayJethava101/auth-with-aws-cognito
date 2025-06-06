@@ -381,11 +381,11 @@ export class CognitoService {
    * Only for admin use - requires admin credentials
    * @param username The user's email/username
    */
-  async forcedGlobalSignOut(username: string) {
+  async forcedGlobalSignOut(email: string) {
     try {
       const command = new AdminUserGlobalSignOutCommand({
         UserPoolId: this.userPoolId,
-        Username: username,
+        Username: email,
       });
 
       const response = await this.cognitoClient.send(command);

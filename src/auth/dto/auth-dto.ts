@@ -85,3 +85,17 @@ export class RefreshTokenDto {
   @IsNotEmpty({ message: 'Refresh Token is required' })
   refreshToken: string;
 }
+
+export class ChangePasswordDto {
+  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @IsNotEmpty({ message: 'Email is required' })
+  email: string;
+
+  @IsString({ message: 'Current Password must be a string' })
+  @IsNotEmpty({ message: 'Current Password is required' })
+  currentPassword: string;
+
+  @IsString({ message: 'New Password must be a string' })
+  @IsNotEmpty({ message: 'New Password is required' })
+  newPassword: string;
+}

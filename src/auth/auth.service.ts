@@ -1,15 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CognitoService } from '../cognito/cognito.service';
-import { SignUpDto } from './dto/signup.dto';
-import { ConfirmSignUpDto } from './dto/confirm-signup.dto';
-import { SignInDto } from './dto/signin.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
 import { RbacService } from 'src/rbac/rbac.service';
-import { GlobalSignOutDto } from './dto/global-signout.dto';
-import { ForcedGlobalSignOutDto } from './dto/forced-global-signout.dto';
-import { InitiateMfaSetupDto } from './dto/initiate-mfa-setup.dto';
-import { VerifyTotpDto } from './dto/verify-totp.dto';
-import { RespondToMfaChallengeDto } from './dto/respond-to-mfa-challenge.dto';
+import { GlobalSignOutDto, ChangePasswordDto  } from './dto/auth-dto';
 
 @Injectable()
 export class AuthService {
@@ -74,9 +66,8 @@ export class AuthService {
 
   }
 
-  async forcedGlobalSignOut(adminGlobalSignOutDto: ForcedGlobalSignOutDto   ) {
-    const { username } = adminGlobalSignOutDto;
-    return this.cognitoService.forcedGlobalSignOut(username);
+  async forcedGlobalSignOut(email: string) {
+    return this.cognitoService.forcedGlobalSignOut(email);
   }
 
   async refreshToken(refreshToken: string) {
