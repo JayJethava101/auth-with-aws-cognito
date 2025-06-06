@@ -19,86 +19,50 @@ export class AuthService {
    
   ) {}
 
-  async signUp(signUpDto: SignUpDto) {
-    const { email, password, name } = signUpDto;
-    
-    const userAttributes = [
-      {
-        Name: 'name',
-        Value: name,
-      },
-      {
-        Name: 'email',
-        Value: email,
-      },
-    ];
+  // async forgotPassword(email: string) {
+  //   return this.cognitoService.forgotPassword(email);
+  // }
 
-    // Optionally assign a default role
-    // Note: You need to wait for the user to be confirmed before assigning roles
-    
-   
+  // async confirmForgotPassword(email: string, password: string, confirmationCode: string) {
+  //   return this.cognitoService.confirmForgotPassword(email, password, confirmationCode);
+  // }
 
-    return this.cognitoService.signUp(email, password, userAttributes);
-  }
+  // async changePassword(changePasswordDto: ChangePasswordDto) {
+  //   const { email, currentPassword, newPassword } = changePasswordDto;
+  //   return this.cognitoService.changePassword(email, currentPassword, newPassword);
+  // }
 
-  async confirmSignUp(confirmSignUpDto: ConfirmSignUpDto) {
-    const { email, confirmationCode } = confirmSignUpDto;
+  // async assignDefaultRole(email: string) {
+  //   // Default role is typically "user"
+  //   await this.rbacService.assignRoleToUser(email, 'user');
+  // }
 
-    // // After confirmation succeeds, assign the default role
-    // await this.assignDefaultRole(email);
-    
-    return this.cognitoService.confirmSignUp(email, confirmationCode);
-  }
+  // async globalSignOut(globalSignOutDto: GlobalSignOutDto) {
+  //   const { accessToken } = globalSignOutDto;
+  //   return this.cognitoService.globalSignOut(accessToken);
+  // }
 
-  async signIn(signInDto: SignInDto) {
-    const { email, password } = signInDto;
-    return this.cognitoService.signIn(email, password);
-  }
+  // async forcedGlobalSignOut(adminGlobalSignOutDto: ForcedGlobalSignOutDto   ) {
+  //   const { username } = adminGlobalSignOutDto;
+  //   return this.cognitoService.forcedGlobalSignOut(username);
+  // }
 
-  async forgotPassword(email: string) {
-    return this.cognitoService.forgotPassword(email);
-  }
+  // async refreshToken(refreshToken: string) {
+  //   return this.cognitoService.refreshToken(refreshToken);
+  // }
 
-  async confirmForgotPassword(email: string, password: string, confirmationCode: string) {
-    return this.cognitoService.confirmForgotPassword(email, password, confirmationCode);
-  }
+  // async initiateMfaSetup(initiateMfaSetupDto: InitiateMfaSetupDto) {
+  //   const { session } = initiateMfaSetupDto;
+  //   return this.cognitoService.initiateMfaSetup(session);
+  // }
 
-  async changePassword(changePasswordDto: ChangePasswordDto) {
-    const { email, currentPassword, newPassword } = changePasswordDto;
-    return this.cognitoService.changePassword(email, currentPassword, newPassword);
-  }
+  // async verifyTotp(verifyTotpDto: VerifyTotpDto) {
+  //   const { session, totpCode } = verifyTotpDto;
+  //   return this.cognitoService.verifyTotp(session, totpCode);
+  // }
 
-  async assignDefaultRole(email: string) {
-    // Default role is typically "user"
-    await this.rbacService.assignRoleToUser(email, 'user');
-  }
-
-  async globalSignOut(globalSignOutDto: GlobalSignOutDto) {
-    const { accessToken } = globalSignOutDto;
-    return this.cognitoService.globalSignOut(accessToken);
-  }
-
-  async forcedGlobalSignOut(adminGlobalSignOutDto: ForcedGlobalSignOutDto   ) {
-    const { username } = adminGlobalSignOutDto;
-    return this.cognitoService.forcedGlobalSignOut(username);
-  }
-
-  async refreshToken(refreshToken: string) {
-    return this.cognitoService.refreshToken(refreshToken);
-  }
-
-  async initiateMfaSetup(initiateMfaSetupDto: InitiateMfaSetupDto) {
-    const { session } = initiateMfaSetupDto;
-    return this.cognitoService.initiateMfaSetup(session);
-  }
-
-  async verifyTotp(verifyTotpDto: VerifyTotpDto) {
-    const { session, totpCode } = verifyTotpDto;
-    return this.cognitoService.verifyTotp(session, totpCode);
-  }
-
-  async respondToMfaChallenge(respondToMfaChallengeDto: RespondToMfaChallengeDto) {
-    const { email, session, totpCode } = respondToMfaChallengeDto;
-    return this.cognitoService.respondToMfaChallenge(email, session, totpCode);
-  }
+  // async respondToMfaChallenge(respondToMfaChallengeDto: RespondToMfaChallengeDto) {
+  //   const { email, session, totpCode } = respondToMfaChallengeDto;
+  //   return this.cognitoService.respondToMfaChallenge(email, session, totpCode);
+  // }
 }
