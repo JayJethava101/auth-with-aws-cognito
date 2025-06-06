@@ -45,8 +45,8 @@ export class CognitoService {
     this.cognitoClient = new CognitoIdentityProviderClient({
       region: this.configService.get<string>('AWS_REGION'),
       credentials: {
-        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID') || 'AKIA4KXZ5E447X4CHBTL',
-        secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY') || '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',
+        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID') || '',
+        secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY') || '',
       },
     });
   }
