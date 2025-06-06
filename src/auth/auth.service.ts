@@ -7,6 +7,9 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { RbacService } from 'src/rbac/rbac.service';
 import { GlobalSignOutDto } from './dto/global-signout.dto';
 import { ForcedGlobalSignOutDto } from './dto/forced-global-signout.dto';
+import { InitiateMfaSetupDto } from './dto/initiate-mfa-setup.dto';
+import { VerifyTotpDto } from './dto/verify-totp.dto';
+import { RespondToMfaChallengeDto } from './dto/respond-to-mfa-challenge.dto';
 
 @Injectable()
 export class AuthService {
@@ -41,8 +44,8 @@ export class AuthService {
   async confirmSignUp(confirmSignUpDto: ConfirmSignUpDto) {
     const { email, confirmationCode } = confirmSignUpDto;
 
-    // After confirmation succeeds, assign the default role
-    await this.assignDefaultRole(email);
+    // // After confirmation succeeds, assign the default role
+    // await this.assignDefaultRole(email);
     
     return this.cognitoService.confirmSignUp(email, confirmationCode);
   }
@@ -83,5 +86,19 @@ export class AuthService {
   async refreshToken(refreshToken: string) {
     return this.cognitoService.refreshToken(refreshToken);
   }
-  
+
+  async initiateMfaSetup(initiateMfaSetupDto: InitiateMfaSetupDto) {
+    const { session } = initiateMfaSetupDto;
+    return this.cognitoService.initiateMfaSetup(session);
+  }
+
+  async verifyTotp(verifyTotpDto: VerifyTotpDto) {
+    const { session, totpCode } = verifyTotpDto;
+    return this.cognitoService.verifyTotp(session, totpCode);
+  }
+
+  async respondToMfaChallenge(respondToMfaChallengeDto: RespondToMfaChallengeDto) {
+    const { email, session, totpCode } = respondToMfaChallengeDto;
+    return this.cognitoService.respondToMfaChallenge(email, session, totpCode);
+  }
 }

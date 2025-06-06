@@ -10,6 +10,9 @@ import { ForcedGlobalSignOutDto } from './dto/forced-global-signout.dto';
 import { RolesGuard } from '../guards/roles/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { InitiateMfaSetupDto } from './dto/initiate-mfa-setup.dto';
+import { VerifyTotpDto } from './dto/verify-totp.dto';
+import { RespondToMfaChallengeDto } from './dto/respond-to-mfa-challenge.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -66,5 +69,20 @@ export class AuthController {
   @Post('refresh-token')
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
+  }
+
+  @Post('initiate-mfa-setup')
+  async initiateMfaSetup(@Body() initiateMfaSetupDto: InitiateMfaSetupDto) {
+    return this.authService.initiateMfaSetup(initiateMfaSetupDto);
+  }
+
+  @Post('verify-totp')
+  async verifyTotp(@Body() verifyTotpDto: VerifyTotpDto) {
+    return this.authService.verifyTotp(verifyTotpDto);
+  }
+
+  @Post('respond-to-mfa-challenge')
+  async respondToMfaChallenge(@Body() respondToMfaChallengeDto: RespondToMfaChallengeDto) {
+    return this.authService.respondToMfaChallenge(respondToMfaChallengeDto);
   }
 }

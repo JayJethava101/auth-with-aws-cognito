@@ -11,6 +11,10 @@ import {
   ChangePasswordCommand,
   AdminUserGlobalSignOutCommand,
   GlobalSignOutCommand,
+  AssociateSoftwareTokenCommand,
+  VerifySoftwareTokenCommand,
+  SetUserMFAPreferenceCommand,
+  RespondToAuthChallengeCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { createHmac } from 'crypto';
 import {
@@ -40,6 +44,10 @@ export class CognitoService {
     
     this.cognitoClient = new CognitoIdentityProviderClient({
       region: this.configService.get<string>('AWS_REGION'),
+      credentials: {
+        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID') || 'AKIA4KXZ5E447X4CHBTL',
+        secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY') || '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',
+      },
     });
   }
 
@@ -279,5 +287,103 @@ export class CognitoService {
     } catch (error) {
       this.handleCognitoError(error);
     }
+  }
+
+  /**
+   * Initiate MFA setup for a user
+   * @param session The session from confirm signup
+   * @returns The secret code for TOTP setup and new session
+   */
+  async initiateMfaSetup(session: string) {
+    try {
+      const command = new AssociateSoftwareTokenCommand({
+        Session: session,
+      });
+
+      const response = await this.cognitoClient.send(command);
+      return response;
+    } catch (error) {
+      this.handleCognitoError(error);
+    }
+  }
+
+  /**
+   * Verify TOTP token during MFA setup
+   * @param session The session from initiate-mfa-setup
+   * @param totpCode The TOTP code to verify
+   * @returns The verification status and new session
+   */
+  async verifyTotp(session: string, totpCode: string) {
+    try {
+      console.log('totpCode', totpCode);
+      const command = new VerifySoftwareTokenCommand({
+        Session: session,
+        UserCode: totpCode,
+      });
+
+      const response = await this.cognitoClient.send(command);
+      return response;
+    } catch (error) {
+      this.handleCognitoError(error);
+    }
+  }
+
+  /**
+   * Enable MFA for a user after successful verification
+   * @param accessToken The user's access token
+   */
+  async enableMfa(accessToken: string) {
+    try {
+      const command = new SetUserMFAPreferenceCommand({
+        AccessToken: accessToken,
+        SoftwareTokenMfaSettings: {
+          Enabled: true,
+          PreferredMfa: true,
+        },
+      });
+
+      const response = await this.cognitoClient.send(command);
+      return response;
+    } catch (error) {
+      this.handleCognitoError(error);
+    }
+  }
+
+  /**
+   * Respond to MFA challenge during sign in
+   * @param email The user's email
+   * @param session The session from verify-totp
+   * @param totpCode The TOTP code to verify
+   * @returns The authentication result with tokens
+   */
+  async respondToMfaChallenge(email: string, session: string, totpCode: string) {
+    try {
+      const command = new RespondToAuthChallengeCommand({
+        ChallengeName: 'SOFTWARE_TOKEN_MFA',
+        ClientId: this.clientId,
+        Session: session,
+        ChallengeResponses: {
+          SOFTWARE_TOKEN_MFA_CODE: totpCode,
+          USERNAME: email,
+          SECRET_HASH: this.calculateSecretHash(email),
+        },
+      });
+
+      const response = await this.cognitoClient.send(command);
+      return response;
+    } catch (error) {
+      this.handleCognitoError(error);
+    }
+  }
+
+  /**
+   * Helper method to get username from session
+   * @param session The session token
+   * @returns The username
+   */
+  private getUsernameFromSession(session: string): string {
+    // You might need to implement this based on your session structure
+    // This is a placeholder implementation
+    return '';
   }
 }
