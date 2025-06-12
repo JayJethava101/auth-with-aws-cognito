@@ -17,6 +17,7 @@ import {
   RespondToAuthChallengeCommand,
   AuthFlowType,
   ChallengeNameType,
+  AdminGetUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import {
   UserNotFoundException,
@@ -46,6 +47,10 @@ export class CognitoService {
     
     this.cognitoClient = new CognitoIdentityProviderClient({
       region: this.configService.get<string>('AWS_REGION'),
+      credentials: {
+        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID') || '',
+        secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY') || '',
+      },
     });
   }
 
@@ -90,12 +95,17 @@ export class CognitoService {
           Name: 'name',
           Value: name,
         },
+        {
+          Name: 'custom:tenantId',
+          Value: '12345', // the tenantId need to get from the invitaton link
+        }
       ],
     };
 
     try {
       const command = new SignUpCommand(params);
       const result = await this.cognitoClient.send(command);
+      console.log('SignUp',result)
       return {
         userSub: result.UserSub,
         message: 'User registration successful. Please check your email for verification code.',
@@ -116,7 +126,25 @@ export class CognitoService {
     try {
       const command = new ConfirmSignUpCommand(params);
       await this.cognitoClient.send(command);
-      return { message: 'Email verification successful' };
+
+      // After successful confirmation, get the user's attributes including sub
+      const adminGetUserCommand = new AdminGetUserCommand({
+        UserPoolId: this.userPoolId,
+        Username: email,
+      });
+
+      const userResult = await this.cognitoClient.send(adminGetUserCommand);
+      const userId = userResult.UserAttributes?.find(attr => attr.Name === 'sub')?.Value;
+      const tenantId = userResult.UserAttributes?.find(attr => attr.Name === 'custom:tenantId')?.Value;
+      console.log(userResult)
+      
+      // todo: creat user-tenant mapping in the cental database
+      
+
+      return { 
+        message: 'Email verification successful',
+        userResult
+      };
     } catch (error) {
       this.handleCognitoError(error);
     }
@@ -136,6 +164,8 @@ export class CognitoService {
     try {
       const command = new InitiateAuthCommand(params);
       const result = await this.cognitoClient.send(command);
+
+    
 
       if (result.ChallengeName === ChallengeNameType.SOFTWARE_TOKEN_MFA) {
         return {
